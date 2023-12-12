@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: 
+  name: tpz-plugin
+  namespace: argocd
+data:
+  plugin.yaml: |
+    apiVersion: argoproj.io/v1alpha1
+    kind: ConfigManagementPlugin
+    metadata:
+      name: tpz-plugin
+    spec:
+      version: v1.0
+      generate:  # "generate" must produce a valid Kubernetes object to stdout
+        command: [sh, -c]
+        args:
+          - |
+            echo "{\"kind\": \"ConfigMap\", \"apiVersion\": \"v1\", \"metadata\": { \"name\": \"$ARGOCD_APP_NAME\", \"namespace\": \"$ARGOCD_APP_NAMESPACE\", \"annotations\": {\"Foo\": \"$ARGOCD_ENV_FOO\", \"KubeVersion\": \"$KUBE_VERSION\", \"KubeApiVersion\": \"$KUBE_API_VERSIONS\",\"Bar\": \"baz\"}}}"
+      discover:
+        filename: "./main.go"  # this file should exist in repo for the Application
